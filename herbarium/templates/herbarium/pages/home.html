@@ -1,0 +1,31 @@
+{% extends "global/home.html" %}
+
+{% block title %}Acervo Digital - Início{% endblock %}
+
+{% block content %}
+    <div class="page-header">
+        <h2 style="color: var(--primary);">Exemplares Recentes</h2>
+        <p>Explore as espécies catalogadas no sistema.</p>
+    </div>
+
+    <div class="specimen-grid">
+        {% for specimen in specimens %}
+            <article class="specimen-card">
+                {% if specimen.images.all %}
+                    <img src="{{ specimen.images.first.image_file.url }}" class="card-img" alt="{{ specimen.current_identification.taxonomy.scientific_name }}">
+                {% else %}
+                    <div class="card-img" style="display:flex; align-items:center; justify-content:center; color:#999;">Sem Imagem</div>
+                {% endif %}
+
+                <div class="card-body">
+                    <span class="family-tag">{{ specimen.current_identification.taxonomy.family }}</span>
+                    <h3 class="scientific-name">{{ specimen.current_identification.taxonomy.scientific_name }}</h3>
+                    <p>Tombo: {{ specimen.catalog_number }}</p>
+                    <a href="{% url 'herbarium:specimen_detail' specimen.catalog_number %}" style="color: var(--primary); font-weight: bold;">Ver ficha completa →</a>
+                </div>
+            </article>
+        {% empty %}
+            <p>Nenhum exemplar encontrado.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <!-- 1. Puxa as metas, fontes e links de CSS que estão no head.html -->
+    {% include "herbarium/partials/head.html" %}
+
+    <!-- Define um bloco de título que pode ser mudado em cada página -->
+    <title>{% block title %}Herbário Universitário{% endblock title %}</title>
+</head>
+<body>
+
+    <!-- 2. Puxa a barra de navegação e o logotipo -->
+    {% include "herbarium/partials/header.html" %}
+
+    <!-- 3. Espaço reservado para o CONTEÚDO (O "Body" que muda) -->
+    <!-- Usamos uma classe container para alinhar tudo ao centro -->
+    <main class="container">
+
+        {% block content %}
+            <!-- O conteúdo de home.html, specimen_detail.html, etc., entrará aqui -->
+        {% endblock content %}
+
+    </main>
+
+    <!-- 4. Puxa as informações fixas do rodapé -->
+    {% include "herbarium/partials/footer.html" %}
+
+    <!-- Se você precisar de JavaScript global (como JQuery ou Scripts próprios) -->
+    <script src="{% static 'herbarium/js/main.js' %}"></script>
+</body>
+</html>
