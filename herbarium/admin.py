@@ -1,17 +1,38 @@
-from django.contrib import admin # <--- Certifique-se que NÃO tem o .gis aqui
-from .models import Person, Taxonomy, Collection, CollectionEvent, Occurrence, IdentificationHistory, SpecimenImage
+from django.contrib import admin
+from .models import (
+    Pessoa, Taxonomia, Colecao, RegistroColeta,
+    Ocorrencia, HistoricoIdentificacao, OcorrenciaColetor,
+    ComplementoEspecime, ImagemEspecime
+)
 
-# Se você usou admin.GISModelAdmin, mude para admin.ModelAdmin
-@admin.register(CollectionEvent)
-class CollectionEventAdmin(admin.ModelAdmin): # <--- Aqui era GISModelAdmin, mude para ModelAdmin
-    list_display = ('municipality', 'state_province', 'collection_date')
+# Inlines para facilitar o cadastro de imagens e coletores dentro da Ocorrência
+class ImagemEspecimeInline(admin.TabularInline):
+    model = ImagemEspecime
+    extra = 1
 
-@admin.register(Occurrence)
-class OccurrenceAdmin(admin.ModelAdmin):
-    list_display = ('catalog_number', 'field_number', 'submission_status')
+class OcorrenciaColetorInline(admin.TabularInline):
+    model = OcorrenciaColetor
+    extra = 1
 
-admin.site.register(Person)
-admin.site.register(Taxonomy)
-admin.site.register(Collection)
-admin.site.register(IdentificationHistory)
-admin.site.register(SpecimenImage)
+@admin.register(Ocorrencia)
+class OcorrenciaAdmin(admin.ModelAdmin):
+    list_display = ('num_tombo', 'status_submissao', 'id_colecao')
+    search_fields = ('num_tombo', 'num_coleta')
+    inlines = [OcorrenciaColetorInline, ImagemEspecimeInline]
+
+@admin.register(Taxonomia)
+class TaxonomiaAdmin(admin.ModelAdmin):
+    list_display = ('nome_cientifico', 'familia', 'genero')
+    search_fields = ('nome_cientifico', 'familia')
+
+@admin.register(RegistroColeta)
+class RegistroColetaAdmin(admin.ModelAdmin):
+    list_display = ('municipio', 'estado_provincia', 'data_coleta')
+
+# Registros simples para as demais tabelas
+admin.site.register(Pessoa)
+admin.site.register(Colecao)
+admin.site.register(HistoricoIdentificacao)
+admin.site.register(OcorrenciaColetor)
+admin.site.register(ComplementoEspecime)
+admin.site.register(ImagemEspecime)

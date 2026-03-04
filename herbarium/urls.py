@@ -8,7 +8,7 @@ urlpatterns = [
      path('', views.home, name="home"),
 
 ]
-
+path('curador/', views.acessar_curador, name='curador'),
 
 
 
