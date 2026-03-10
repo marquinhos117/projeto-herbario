@@ -1,6 +1,6 @@
-{% extends "global/home.html" %}
+{% extends "global/base.html" %}
 
-{% block title %}Acesso Restrito - Curadoria{% endblock %}
+{% block title %}Acesso - Curadoria{% endblock %}
 
 {% block content %}
 <div class="container-center" style="min-height: 70vh; display: flex; align-items: center; justify-content: center;">
@@ -10,7 +10,15 @@
             <p style="font-size: 0.9rem; color: #666;">Identifique-se para gerenciar o acervo do IF Goiano</p>
         </div>
 
-        <form method="POST" action="{% url 'login' %}" class="curador-form">
+        {% if messages %}
+            <div class="message">
+                {% for message in messages %}
+                    {{ message }}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'herbarium:login' %}" class="curador-form">
             {% csrf_token %}
 
             <div class="form-group" style="margin-bottom: 20px;">
@@ -31,7 +39,7 @@
             </button>
 
             <div style="margin-top: 20px; text-align: center;">
-                <a href="{% url 'home' %}" style="color: #888; text-decoration: none; font-size: 0.85rem;">← Voltar para a Consulta Pública</a>
+                <a href="{% url 'herbarium:home' %}" style="color: #888; text-decoration: none; font-size: 0.85rem;">← Voltar para a Consulta Pública</a>
             </div>
         </form>
     </div>

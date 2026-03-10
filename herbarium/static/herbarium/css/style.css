@@ -148,3 +148,13 @@ body {
     background: white;
     box-shadow: 0 10px 25px rgba(0,0,0,0.05);
 }
+
+.message{
+    background-color: #ffebee;
+    color: #c62828;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 0.9rem;
+}
