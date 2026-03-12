@@ -1,0 +1,93 @@
+{% extends "global/base.html" %}
+
+{% block title %}Painel de Controle{% endblock %}
+
+{% block content %}
+<div class="dashboard-header page-header">
+    <h2>Painel de Controle</h2>
+    <p>Bem-vindo, <strong>{{ perfil.nome_completo }}</strong>! (Nível: {{ perfil.nivel_acesso }})</p>
+    <div class="dashboard-actions">
+        <a href="{% url 'herbarium:cadastrar_especime' %}" class="btn-painel-new">+ Novo Espécime</a>
+        <a href="{% url 'herbarium:sair' %}" class="btn-logout">Sair da Conta</a>
+    </div>
+</div>
+
+{% if messages %}
+    <div class="dashboard-messages">
+        {% for message in messages %}
+            <div class="dashboard-message {% if message.tags == 'error' %}error{% else %}success{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="dashboard-card">
+
+    {% if perfil.nivel_acesso == 'CURADOR' or perfil.nivel_acesso == 'ADMIN' %}
+        <h3 class="section-title">Fila de Curadoria (Pendentes)</h3>
+
+        {% if pendentes %}
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>Tombo/Coleta</th>
+                        <th>Digitador</th>
+                        <th>Status</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in pendentes %}
+                    <tr>
+                        <td>{{ p.num_tombo|default:"-" }} / {{ p.num_coleta }}</td>
+                        <td>{{ p.id_digitador }}</td>
+                        <td><span class="badge badge-pendente">{{ p.status_submissao }}</span></td>
+                        <td><a href="/admin/herbarium/ocorrencia/" target="_blank" class="table-action-link">Avaliar no Admin →</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="empty-message">Não há submissões pendentes de aprovação.</p>
+        {% endif %}
+
+        <h3 class="section-title">Acervo Aprovado</h3>
+        <p>Total de espécimes aprovados: <strong>{{ aprovados.count }}</strong></p>
+
+    {% else %}
+        {# VISÃO DE ALUNO/DIGITADOR #}
+        <h3 class="section-title">Minhas Submissões</h3>
+
+        {% if minhas_ocorrencias %}
+            <table class="dashboard-table">
+                <thead>
+                    <tr>
+                        <th>Sua Coleta</th>
+                        <th>Coleção</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for o in minhas_ocorrencias %}
+                    <tr>
+                        <td>{{ o.num_coleta }}</td>
+                        <td>{{ o.id_colecao.acronimo }}</td>
+                        <td>
+                            {% if o.status_submissao == 'Aprovado' %}
+                                <span class="badge badge-aprovado">Aprovado</span>
+                            {% else %}
+                                <span class="badge badge-pendente">Pendente</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="empty-message">Você ainda não submeteu nenhum espécime.</p>
+        {% endif %}
+    {% endif %}
+
+</div>
+{% endblock %}

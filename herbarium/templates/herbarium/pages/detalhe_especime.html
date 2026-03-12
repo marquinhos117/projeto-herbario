@@ -1,0 +1,141 @@
+{% extends "global/base.html" %}
+
+{% block title %}{{ especime.num_tombo }} — Detalhe do Espécime{% endblock %}
+
+{% block content %}
+<div class="detail-page">
+
+    <!-- Cabeçalho com nome científico -->
+    <div>
+        <a href="{% url 'herbarium:home' %}" class="detail-back-link">← Voltar ao Acervo</a>
+        <h1 class="detail-title">
+            {{ especime.id_identificacao_atual.id_taxon.nome_cientifico|default:"Não Identificado" }}
+        </h1>
+        <div class="detail-meta">
+            <span class="badge-family">
+                {{ especime.id_identificacao_atual.id_taxon.familia|upper|default:"FAMÍLIA NÃO IDENTIFICADA" }}
+            </span>
+            {% if especime.status_submissao == 'Aprovado' %}
+                <span class="badge-status-aprovado">{{ especime.status_submissao }}</span>
+            {% elif especime.status_submissao == 'Pendente' %}
+                <span class="badge-status-pendente">{{ especime.status_submissao }}</span>
+            {% else %}
+                <span class="badge-status-outro">{{ especime.status_submissao }}</span>
+            {% endif %}
+            <span class="detail-tombo">Tombo: <strong>{{ especime.num_tombo }}</strong></span>
+        </div>
+    </div>
+
+    <div class="detail-grid">
+
+        <!-- Coluna Esquerda: Imagens -->
+        <div class="detail-section-images">
+            {% if especime.imagens.all %}
+                {% for img in especime.imagens.all %}
+                    <img src="{{ img.url.url }}" alt="{{ especime.num_tombo }}" class="specimen-image">
+                {% endfor %}
+            {% else %}
+                <div class="no-image-box">
+                    <span class="no-image-icon">🌿</span>
+                    <span class="no-image-text">Sem imagem cadastrada</span>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Coluna Direita: Informações -->
+        <div>
+
+            <!-- Bloco: Dados Taxonômicos -->
+            <section class="detail-section detail-section-green">
+                <h3 class="detail-section-title green">🔬 Identificação Taxonômica</h3>
+                <table class="detail-table">
+                    {% with t=especime.id_identificacao_atual.id_taxon %}
+                    <tr><td class="dt-label">Nome Científico</td><td class="dt-value"><em>{{ t.nome_cientifico|default:"—" }}</em></td></tr>
+                    <tr><td class="dt-label">Família</td><td class="dt-value">{{ t.familia|default:"—" }}</td></tr>
+                    <tr><td class="dt-label">Gênero</td><td class="dt-value"><em>{{ t.genero|default:"—" }}</em></td></tr>
+                    <tr><td class="dt-label">Epíteto</td><td class="dt-value">{{ t.epiteto_especifico|default:"—" }}</td></tr>
+                    <tr><td class="dt-label">Status</td><td class="dt-value">{{ t.status_taxonomico|default:"—" }}</td></tr>
+                    {% endwith %}
+                    <tr><td class="dt-label">Data Identificação</td><td class="dt-value">{{ especime.id_identificacao_atual.data_identificacao|date:"d/m/Y"|default:"—" }}</td></tr>
+                    <tr><td class="dt-label">Identificador</td><td class="dt-value">{{ especime.id_identificacao_atual.id_identificador.nome_completo|default:"—" }}</td></tr>
+                </table>
+            </section>
+
+            <!-- Bloco: Dados de Coleta -->
+            <section class="detail-section detail-section-blue">
+                <h3 class="detail-section-title blue">📍 Dados de Coleta</h3>
+                {% with c=especime.id_registro_coleta %}
+                <table class="detail-table">
+                    <tr><td class="dt-label">Data</td><td class="dt-value">{{ c.data_coleta|date:"d/m/Y"|default:"—" }}</td></tr>
+                    <tr><td class="dt-label">País</td><td class="dt-value">{{ c.pais|default:"—" }}</td></tr>
+                    <tr><td class="dt-label">Estado</td><td class="dt-value">{{ c.estado_provincia|default:"—" }}</td></tr>
+                    <tr><td class="dt-label">Município</td><td class="dt-value">{{ c.municipio|default:"—" }}</td></tr>
+                    <tr><td class="dt-label">Localidade</td><td class="dt-value">{{ c.localidade|default:"—" }}</td></tr>
+                    <tr><td class="dt-label">Habitat</td><td class="dt-value">{{ c.habitat|default:"—" }}</td></tr>
+                    {% if c.latitude and c.longitude %}
+                    <tr><td class="dt-label">Coordenadas</td><td class="dt-value">
+                        {{ c.latitude }}°, {{ c.longitude }}°
+                        <a href="https://maps.google.com/?q={{ c.latitude }},{{ c.longitude }}"
+                           target="_blank" class="map-link">📌 Ver no mapa</a>
+                    </td></tr>
+                    {% endif %}
+                </table>
+                {% endwith %}
+            </section>
+
+            <!-- Bloco: Dados de Coleção -->
+            <section class="detail-section detail-section-purple">
+                <h3 class="detail-section-title purple">🏛️ Dados de Coleção</h3>
+                <table class="detail-table">
+                    <tr><td class="dt-label">Num. Tombo</td><td class="dt-value"><strong>{{ especime.num_tombo }}</strong></td></tr>
+                    <tr><td class="dt-label">Num. Coleta</td><td class="dt-value">{{ especime.num_coleta|default:"—" }}</td></tr>
+                    <tr><td class="dt-label">Coleção</td><td class="dt-value">{{ especime.id_colecao.nome_completo|default:"—" }} ({{ especime.id_colecao.acronimo|default:"" }})</td></tr>
+                    <tr><td class="dt-label">Digitador</td><td class="dt-value">{{ especime.id_digitador.nome_completo|default:"—" }}</td></tr>
+                </table>
+
+                <!-- Coletores -->
+                {% with coletores=especime.ocorrenciacoletor_set.all %}
+                {% if coletores %}
+                <h4 class="collector-heading">Coletores:</h4>
+                <ul class="collector-list">
+                    {% for rel in coletores %}
+                        <li>{{ rel.pessoa.nome_completo }}{% if rel.e_principal %} <strong>(principal)</strong>{% endif %}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+                {% endwith %}
+            </section>
+
+        </div>
+    </div>
+
+    <!-- Histórico de Identificação -->
+    {% if historico.count > 1 %}
+    <section class="history-section">
+        <h3 class="detail-section-title orange">📋 Histórico de Identificações</h3>
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Nome Científico</th>
+                    <th>Identificador</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for h in historico %}
+                <tr class="{% if forloop.first %}current-row{% elif forloop.counter|divisibleby:2 %}alt-row{% endif %}">
+                    <td>{{ h.data_identificacao|date:"d/m/Y" }}</td>
+                    <td class="italic-cell">
+                        {{ h.id_taxon.nome_cientifico }}
+                        {% if forloop.first %}<span class="badge-current">ATUAL</span>{% endif %}
+                    </td>
+                    <td>{{ h.id_identificador.nome_completo|default:"—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    {% endif %}
+
+</div>
+{% endblock %}

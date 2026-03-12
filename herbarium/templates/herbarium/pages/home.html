@@ -3,47 +3,114 @@
 {% block title %}Acervo Digital - Início{% endblock %}
 
 {% block content %}
-    <div class="page-header">
-        <h2 style="color: var(--primary);">Exemplares Recentes</h2>
-        <p>Explore as espécies catalogadas no sistema do IF Goiano.</p>
-    </div>
+<div class="page-header">
+    <h2>Acervo Digital do Herbário IF Goiano - Campus Morrinhos</h2>
+    <p>Explore as espécies catalogadas e aprovadas pela curadoria científica.</p>
 
-    <div class="specimen-grid">
-        {% for item in especimes %}
+    <!-- Formulário de Busca + Filtros -->
+    <form method="GET" action="{% url 'herbarium:home' %}" class="search-form">
+
+        <!-- Barra de texto livre -->
+        <div class="search-bar-row">
+            <input type="text" name="q" value="{{ query }}" id="busca-geral"
+                   placeholder="Buscar por tombo, espécie, família ou município...">
+            <button type="submit" class="btn-search">🔍 Buscar</button>
+            {% if query or familia_sel or taxon_sel %}
+                <a href="{% url 'herbarium:home' %}" class="btn-clear">✕ Limpar</a>
+            {% endif %}
+        </div>
+
+        <!-- Selects dinâmicos -->
+        <div class="filter-row">
+            <div class="filter-group">
+                <label for="sel-familia">Filtrar por Família:</label>
+                <select name="familia" id="sel-familia" onchange="this.form.submit()">
+                    <option value="">— Todas as Famílias —</option>
+                    {% for f in familias %}
+                        <option value="{{ f }}" {% if f == familia_sel %}selected{% endif %}>{{ f }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label for="sel-taxon">Filtrar por Táxon:</label>
+                <select name="taxon" id="sel-taxon" onchange="this.form.submit()" class="select-taxon">
+                    <option value="">— Todos os Táxons —</option>
+                    {% for t in taxons %}
+                        <option value="{{ t }}" {% if t == taxon_sel %}selected{% endif %}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            {% if familia_sel or taxon_sel or query %}
+            <div>
+                <span class="filter-results">
+                    {{ especimes|length }} resultado{{ especimes|length|pluralize:"s" }} encontrado{{ especimes|length|pluralize:"s" }}
+                </span>
+            </div>
+            {% endif %}
+        </div>
+
+    </form>
+</div>
+
+{% if user.is_authenticated %}
+<div class="logged-in-banner">
+    <span>Você está logado. Deseja submeter um novo espécime?</span>
+    <a href="{% url 'herbarium:cadastrar_especime' %}" class="btn-new-specimen">+ Novo Espécime</a>
+</div>
+{% endif %}
+
+<!-- Grade de Espécimes -->
+<div class="specimen-grid">
+    {% for item in especimes %}
+        <a href="{% url 'herbarium:detalhe_especime' item.num_tombo %}" class="card-link">
             <article class="specimen-card">
-                {# Tabela 9: IMAGEM_ESPECIME #}
+
                 {% if item.imagens.all %}
-                    <img src="{{ item.imagens.first.url.url }}" class="card-img" alt="{{ item.id_identificacao_atual.id_taxon.nome_cientifico }}">
+                    <img src="{{ item.imagens.first.url.url }}" class="card-img"
+                         alt="{{ item.id_identificacao_atual.id_taxon.nome_cientifico }}">
                 {% else %}
-                    <div class="card-img" style="display:flex; align-items:center; justify-content:center; background:#eee; color:#999; height:200px;">
-                        Sem Imagem
+                    <div class="card-img card-img-placeholder">
+                        <span class="placeholder-icon">🌿</span>
+                        <span class="placeholder-text">Sem Imagem</span>
                     </div>
                 {% endif %}
 
                 <div class="card-body">
-                    {# Tabela 2: TAXONOMIA (Família) #}
-                    <span class="family-tag" style="background: var(--primary-light); color: var(--primary); padding: 2px 8px; border-radius: 4px; font-size: 0.8rem;">
-                        {{ item.id_identificacao_atual.id_taxon.familia|upper }}
+                    <span class="card-family-tag">
+                        {{ item.id_identificacao_atual.id_taxon.familia|upper|default:"FAMÍLIA NÃO IDENTIFICADA" }}
                     </span>
 
-                    {# Tabela 2: TAXONOMIA (Nome Científico) #}
-                    <h3 class="scientific-name" style="font-style: italic; margin-top: 10px;">
+                    <h3 class="card-scientific-name">
                         {{ item.id_identificacao_atual.id_taxon.nome_cientifico|default:"Não Identificado" }}
                     </h3>
 
-                    {# Tabela 5: OCORRENCIA (Num Tombo) #}
-                    <p>Tombo: <strong>{{ item.num_tombo }}</strong></p>
+                    <p class="card-location">
+                        📍 {{ item.id_registro_coleta.municipio|default:"" }}{% if item.id_registro_coleta.estado_provincia %}, {{ item.id_registro_coleta.estado_provincia }}{% endif %}
+                    </p>
 
-                    {# Link para detalhes (usando o namespace correto do seu urls.py) #}
-                    <a href="{% url 'herbarium:specimen_detail' item.num_tombo %}" style="color: var(--primary); font-weight: bold; text-decoration: none;">
-                        Ver ficha completa →
-                    </a>
+                    <p class="card-tombo">
+                        Tombo: <strong>{{ item.num_tombo }}</strong>
+                    </p>
+
+                    <p class="card-detail-link">Ver detalhes →</p>
                 </div>
             </article>
-        {% empty %}
-            <div class="col-12 text-center">
-                <p>Nenhum exemplar encontrado no acervo no momento.</p>
-            </div>
-        {% endfor %}
-    </div>
+        </a>
+    {% empty %}
+        <div class="empty-state">
+            <div class="empty-state-icon">🔬</div>
+            {% if query or familia_sel or taxon_sel %}
+                <p>Nenhum espécime aprovado encontrado com os filtros selecionados.</p>
+                <a href="{% url 'herbarium:home' %}" class="empty-state-link">← Ver todos os espécimes</a>
+            {% else %}
+                <p>Nenhum espécime aprovado no acervo ainda.</p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'herbarium:cadastrar_especime' %}" class="empty-state-link">Seja o primeiro a submeter um espécime →</a>
+                {% endif %}
+            {% endif %}
+        </div>
+    {% endfor %}
+</div>
 {% endblock %}

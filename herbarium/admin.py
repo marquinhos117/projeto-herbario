@@ -17,10 +17,18 @@ class OcorrenciaColetorInline(admin.TabularInline):
 
 @admin.register(Ocorrencia)
 class OcorrenciaAdmin(admin.ModelAdmin):
-    # Ajustado para os nomes dos campos da Tabela 5
     list_display = ('num_tombo', 'num_coleta', 'status_submissao', 'id_colecao')
     search_fields = ('num_tombo', 'num_coleta')
+    list_filter = ('status_submissao', 'id_colecao')
     inlines = [OcorrenciaColetorInline, ImagemEspecimeInline]
+    actions = ['aprovar_ocorrencias']
+
+    @admin.action(description='Aprovar Ocorrências Selecionadas')
+    def aprovar_ocorrencias(self, request, queryset):
+        # Apenas usuários do grupo curador/admin ou is_staff poderiam
+        # (O Django já trata permissões globais do Admin, mas podemos refinar depois)
+        updated = queryset.update(status_submissao='Aprovado')
+        self.message_user(request, f"{updated} ocorrências foram aprovadas com sucesso.")
 
 @admin.register(Taxonomia)
 class TaxonomiaAdmin(admin.ModelAdmin):

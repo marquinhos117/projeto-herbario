@@ -3,11 +3,11 @@
 {% block title %}Acesso - Curadoria{% endblock %}
 
 {% block content %}
-<div class="container-center" style="min-height: 70vh; display: flex; align-items: center; justify-content: center;">
-    <div class="specimen-card" style="max-width: 450px; width: 100%; padding: 30px; border-top: 5px solid var(--primary);">
-        <div class="page-header" style="text-align: center; margin-bottom: 25px;">
-            <h2 style="color: var(--primary); margin: 0;">Portal do Curador</h2>
-            <p style="font-size: 0.9rem; color: #666;">Identifique-se para gerenciar o acervo do IF Goiano</p>
+<div class="container-center">
+    <div class="login-card">
+        <div class="login-header">
+            <h2>Portal do Curador</h2>
+            <p>Identifique-se para gerenciar o acervo do IF Goiano - Campus Morrinhos</p>
         </div>
 
         {% if messages %}
@@ -21,25 +21,22 @@
         <form method="POST" action="{% url 'herbarium:login' %}" class="curador-form">
             {% csrf_token %}
 
-            <div class="form-group" style="margin-bottom: 20px;">
-                <label for="username" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-main);">Usuário / E-mail</label>
-                <input type="text" name="username" id="username" class="form-control"
-                       style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;" required>
+            <div class="form-group">
+                <label for="username" class="form-label">Usuário / E-mail</label>
+                <input type="text" name="username" id="username" class="form-control" required>
             </div>
 
-            <div class="form-group" style="margin-bottom: 25px;">
-                <label for="password" style="display: block; margin-bottom: 8px; font-weight: bold; color: var(--text-main);">Senha</label>
-                <input type="password" name="password" id="password" class="form-control"
-                       style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;" required>
+            <div class="form-group">
+                <label for="password" class="form-label">Senha</label>
+                <input type="password" name="password" id="password" class="form-control" required>
             </div>
 
-            <button type="submit" class="btn-primary-custom"
-                    style="width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: background 0.3s;">
+            <button type="submit" class="btn-login">
                 Acessar Painel de Controle
             </button>
 
-            <div style="margin-top: 20px; text-align: center;">
-                <a href="{% url 'herbarium:home' %}" style="color: #888; text-decoration: none; font-size: 0.85rem;">← Voltar para a Consulta Pública</a>
+            <div class="login-footer">
+                <a href="{% url 'herbarium:home' %}" class="login-back-link">← Voltar para a Consulta Pública</a>
             </div>
         </form>
     </div>

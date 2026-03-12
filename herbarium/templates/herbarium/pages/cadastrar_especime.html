@@ -1,0 +1,93 @@
+{% extends "global/base.html" %}
+
+{% block title %}Submeter Espécime{% endblock %}
+
+{% block content %}
+<div class="specimen-form-header page-header">
+    <h2>Nova Submissão Botânica</h2>
+    <p>Preencha os dados de campo e taxonômicos do espécime.</p>
+</div>
+
+{% if messages %}
+    <div class="dashboard-messages">
+        {% for message in messages %}
+            <div class="dashboard-message {% if message.tags == 'error' %}error{% else %}success{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="form-container">
+
+    {% if ocorrencia_form.id_colecao.field.queryset.count == 0 %}
+    <div class="warning-banner">
+        ⚠️ <strong>Atenção:</strong> Não há Coleções cadastradas no sistema. Peça ao administrador para cadastrar ao menos uma Coleção no
+        <a href="/admin/herbarium/colecao/" target="_blank">Painel Admin</a> antes de submeter espécimes.
+    </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-two-col">
+            <!-- Lado Esquerdo: Dados da Coleta -->
+            <div>
+                <h3 class="form-section-title">Dados de Coleta</h3>
+                {% for campo in coleta_form %}
+                    <div class="form-field-block">
+                        <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                        {{ campo }}
+                        {% if campo.errors %}
+                            <ul class="errorlist">
+                                {% for error in campo.errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Lado Direito: Ocorrência, Identificação e Imagens -->
+            <div>
+                <h3 class="form-section-title">Dados de Ocorrência</h3>
+                {% for campo in ocorrencia_form %}
+                    <div class="form-field-block">
+                        <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                        {{ campo }}
+                        {% if campo.errors %}
+                            <ul class="errorlist">
+                                {% for error in campo.errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <h3 class="form-section-title">Identificação Taxonômica</h3>
+                {% for campo in identificacao_form %}
+                    <div class="form-field-block">
+                        <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                        {{ campo }}
+                        {% if campo.errors %}
+                            <ul class="errorlist">
+                                {% for error in campo.errors %}<li>{{ error }}</li>{% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+
+                <h3 class="form-section-title">Imagens do Espécime</h3>
+                <div class="form-field-block">
+                    <label>Upload de Fotos (opcional):</label>
+                    <input type="file" name="imagens_planta" multiple accept="image/*">
+                    <small class="form-file-note">Você pode selecionar múltiplas imagens da planta ou exsicata.</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-submit-row">
+            <a href="{% url 'herbarium:painel' %}" class="btn-cancel-form">Cancelar</a>
+            <button type="submit" class="btn-submit-form">Submeter para Curadoria</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

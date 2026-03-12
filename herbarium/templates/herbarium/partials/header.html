@@ -1,17 +1,44 @@
 <header class="main-header">
     <div class="container navbar">
         <a href="{% url 'herbarium:home' %}" class="logo-link">
-            <span style="font-size: 2rem;">🌿</span>
+            <span class="logo-emoji">🌿</span>
             <div class="logo-text">
-                <b>HERBÁRIO</b>
-                <small>CIÊNCIA E TAXONOMIA</small>
+                <b>HERBÁRIO IF GOIANO</b>
+                <small>CAMPUS MORRINHOS</small>
             </div>
         </a>
-        <nav>
+
+        <!-- Desktop nav (hidden on mobile by CSS) -->
+        <nav id="desktopNav" class="desktop-nav">
             <ul class="nav-links">
                 <li><a href="{% url 'herbarium:home' %}">Início</a></li>
-                <li><a href="{% url 'herbarium:login' %}" class="btn-admin">Acesso Curador</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'herbarium:painel' %}" class="btn-admin">Painel de Controle</a></li>
+                {% else %}
+                    <li><a href="{% url 'herbarium:cadastro' %}" class="nav-cadastro">Cadastre-se</a></li>
+                    <li><a href="{% url 'herbarium:login' %}" class="btn-admin">Acesso de Usuário</a></li>
+                {% endif %}
             </ul>
         </nav>
+
+        <!-- Hamburger button (visible only on mobile via CSS) -->
+        <button class="nav-toggle" id="navToggle" aria-label="Menu">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
     </div>
+
+    <!-- Mobile dropdown nav (hidden by default, shown on hamburger click) -->
+    <nav id="mainNav" class="mobile-nav">
+        <ul class="nav-links">
+            <li><a href="{% url 'herbarium:home' %}">Início</a></li>
+            {% if user.is_authenticated %}
+                <li><a href="{% url 'herbarium:painel' %}" class="btn-admin">Painel de Controle</a></li>
+            {% else %}
+                <li><a href="{% url 'herbarium:cadastro' %}" class="nav-cadastro">Cadastre-se</a></li>
+                <li><a href="{% url 'herbarium:login' %}" class="btn-admin">Acesso de Usuário</a></li>
+            {% endif %}
+        </ul>
+    </nav>
 </header>

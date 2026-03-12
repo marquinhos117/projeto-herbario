@@ -1,0 +1,41 @@
+{% extends "global/base.html" %}
+
+{% block title %}Acervo Digital - Cadastro{% endblock %}
+
+{% block content %}
+<div class="page-header text-center">
+    <h2>Criar Conta no Herbário</h2>
+    <p>Cadastre-se para poder submeter espécimes à nossa base.</p>
+</div>
+
+<div class="register-container">
+    <form method="POST" class="form-cadastro">
+        {% csrf_token %}
+
+        {% if form.errors %}
+            <div class="form-errors">
+                <strong>Corrija os erros abaixo:</strong>
+                {{ form.errors }}
+            </div>
+        {% endif %}
+
+        {% for campo in form %}
+            <div class="form-field">
+                <label for="{{ campo.id_for_label }}">{{ campo.label }}</label>
+                {{ campo }}
+                {% if campo.help_text %}
+                    <small>{{ campo.help_text }}</small>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn-register">
+            Registrar-se
+        </button>
+    </form>
+
+    <div class="register-footer">
+        <p>Já possui uma conta? <a href="{% url 'herbarium:login' %}" class="register-login-link">Faça Login</a></p>
+    </div>
+</div>
+{% endblock %}
