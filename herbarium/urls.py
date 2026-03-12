@@ -9,5 +9,4 @@ urlpatterns = [
 
     path('', views.home, name="home"),
     path('login/', views.acessar_login, name='login'),
-    path('login/', views.acessar_login, name='login'),
 ]

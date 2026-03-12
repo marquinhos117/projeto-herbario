@@ -51,8 +51,4 @@ def acessar_login(request):
 
     # Se não for POST (ou seja, a pessoa só acessou a URL), renderiza o seu HTML limpo
     return render(request, 'herbarium/pages/login.html')
-
-
-
-def acessar_login(request):
-    return render(request, 'herbarium/pages/login.html')
+
