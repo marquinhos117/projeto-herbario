@@ -1,0 +1,119 @@
+// ------------------------------------------------------------------
+// PROJETO HERBÁRIO - VERSÃO 2.0 PostgreSQL
+// ------------------------------------------------------------------
+
+// Tabela 1: PESSOA (Alunos, Curadores e Coletores)
+Table PESSOA {
+  id_pessoa serial [pk, increment]
+  nome_completo varchar(150) [not null]
+  acronimo_coletor varchar(50) [note: 'Ex: A. Silva']
+  instituicao varchar(150)
+  email varchar(100) [unique, note: 'Login do sistema']
+  nivel_acesso varchar(20) [not null, note: 'Aluno, Curador, Administrador']
+  status_conta varchar(20) [default: 'Ativa']
+}
+
+// Tabela 2: TAXONOMIA 
+Table TAXONOMIA {
+  id_taxon serial [pk, increment]
+  nome_cientifico varchar(255) [unique, not null, note: 'Gênero + Espécie + Autor']
+  autor varchar(100)
+  familia varchar(100) [not null]
+  genero varchar(100) [not null]
+  epiteto_especifico varchar(100)
+  status_taxonomico varchar(30) [default: 'Aceito', note: 'Aceito ou Sinônimo']
+  
+  // Auto-relacionamento para sinônimos
+  id_nome_aceito int [ref: > TAXONOMIA.id_taxon, note: 'Se for sinônimo, aponta para o ID correto']
+}
+
+// Tabela 3: COLECAO (A unidade do herbário)
+Table COLECAO {
+  id_colecao serial [pk, increment]
+  acronimo varchar(10) [unique, not null, note: 'Ex: UFG']
+  nome_completo varchar(150) [not null]
+  id_curador int [ref: > PESSOA.id_pessoa]
+}
+
+// Tabela 4: REGISTRO_COLETA (Dados Geográficos e do Evento)
+Table REGISTRO_COLETA {
+  id_registro_coleta serial [pk, increment]
+  data_coleta date [not null]
+  pais varchar(50) [not null]
+  estado_provincia varchar(50)
+  municipio varchar(100)
+  localidade text
+  latitude numeric(9,6)
+  longitude numeric(9,6)
+  geometria geometry [note: 'PostGIS Point(4326)']
+  habitat text
+}
+
+// Tabela 5: OCORRENCIA (O Espécime Físico - Tabela Principal)
+Table OCORRENCIA {
+  id_ocorrencia serial [pk, increment]
+  num_tombo varchar(50) [unique, not null, note: 'Código de Barras']
+  num_coleta varchar(50) [not null, note: 'Número do coletor']
+  tipo_status varchar(50) [note: 'Holótipo, Isótipo, etc']
+  
+  // Workflow de Aprovação
+  status_submissao varchar(20) [default: 'Pendente', note: 'Pendente -> Aprovado']
+  data_aprovacao date
+  id_digitador int [not null, ref: > PESSOA.id_pessoa, note: 'Aluno que inseriu']
+  id_aprovador int [ref: > PESSOA.id_pessoa, note: 'Professor que aprovou']
+  
+  // Relacionamentos Principais
+  id_colecao int [not null, ref: > COLECAO.id_colecao]
+  id_registro_coleta int [not null, ref: > REGISTRO_COLETA.id_registro_coleta]
+  
+  // Aponta para a identificação válida (Cache)
+  id_identificacao_atual int 
+}
+
+// Tabela 6: HISTORICO_IDENTIFICACAO (Determinações Taxonômicas)
+Table HISTORICO_IDENTIFICACAO {
+  id_historico serial [pk, increment]
+  data_identificacao date [not null]
+  observacoes_identificacao text
+  
+  // Quem identificou, qual planta e qual o nome (Taxon)
+  id_ocorrencia int [not null, ref: > OCORRENCIA.id_ocorrencia]
+  id_taxon int [not null, ref: > TAXONOMIA.id_taxon]
+  id_identificador int [ref: > PESSOA.id_pessoa]
+}
+
+// Tabela 7: OCORRENCIA_COLETOR (N:N - Vários coletores por planta)
+Table OCORRENCIA_COLETOR {
+  id_ocorrencia int [ref: > OCORRENCIA.id_ocorrencia]
+  id_pessoa int [ref: > PESSOA.id_pessoa]
+  e_principal boolean [default: false]
+  
+  indexes {
+    (id_ocorrencia, id_pessoa) [pk]
+  }
+}
+
+// Tabela 8: COMPLEMENTO_ESPECIME (DNA, Frutos, etc)
+Table COMPLEMENTO_ESPECIME {
+  id_complemento serial [pk, increment]
+  id_ocorrencia int [not null, ref: > OCORRENCIA.id_ocorrencia]
+  tipo_complemento varchar(50) [not null, note: 'DNA, Carpoteca, Lâmina']
+  identificador_complemento varchar(100)
+  local_armazenamento varchar(100)
+  observacoes text
+}
+
+// Tabela 9: IMAGEM_ESPECIME (Fotos)
+Table IMAGEM_ESPECIME {
+  id_imagem serial [pk, increment]
+  id_ocorrencia int [not null, ref: > OCORRENCIA.id_ocorrencia]
+  url varchar(255) [not null]
+  tipo_imagem varchar(50)
+  data_registro date
+}
+
+// ---------------------------------------------------------
+// RELACIONAMENTO CIRCULAR 
+// ---------------------------------------------------------
+// Ligando o cache da OCORRENCIA ao HISTORICO
+Ref: OCORRENCIA.id_identificacao_atual - HISTORICO_IDENTIFICACAO.id_historico
